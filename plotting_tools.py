@@ -20,35 +20,35 @@ def plotGraphOnCanvas(self, layout, title = "", scale="log", marker = None, reve
 
 def plotgGraphFigure(X, Y, canvas, filename="", xlim=None, title="", scale="log",marker=None, linestyle="solid",
                      revert = False):
-    fig = canvas.theplot
+    fig = canvas.ax
     fig.plot(X, Y, label=filename, linestyle=linestyle, marker=marker)
     if revert:
         fig.invert_xaxis()
-    canvas.theplot.set_title(title)
-    canvas.theplot.set_xlim(xlim)
-    canvas.theplot.set_yscale(scale)
+    canvas.ax.set_title(title)
+    canvas.ax.set_xlim(xlim)
+    canvas.ax.set_yscale(scale)
     fig.legend()
 
 def change_scale(self, scale = "yscale"):
     canvas = self.figurecanvas[1]
     if scale == "yscale":
         if self.graph.yscale == "log":
-            canvas.theplot.set_yscale("linear")
+            canvas.ax.set_yscale("linear")
             self.graph.yscale = "linear"
         else:
-            canvas.theplot.set_yscale("log")
+            canvas.ax.set_yscale("log")
             self.graph.yscale = "log"
 
     elif scale == "xscale":
         if self.graph.xscale == "log":
-            canvas.theplot.set_xscale("linear")
+            canvas.ax.set_xscale("linear")
             self.graph.xscale = "linear"
         else:
-            canvas.theplot.set_xscale("log")
+            canvas.ax.set_xscale("log")
             self.graph.xscale = "log"
     xmin, xmax, ymin, ymax = find_limits(self)
-    canvas.theplot.set_xlim(xmin, xmax)
-    canvas.theplot.set_ylim(ymin, ymax)
+    canvas.ax.set_xlim(xmin, xmax)
+    canvas.ax.set_ylim(ymin, ymax)
     self.figurecanvas[1].draw()
 
 def find_limits(self):
@@ -84,14 +84,12 @@ def find_limits(self):
 
 
 class PlotWidget(FigureCanvas):
-    def __init__(self, parent=None, xlabel=None, ylabel='Intensity (arb. u)', title="", scale="linear"):
-        super(PlotWidget, self).__init__(Figure())
-        self.setParent(parent)
+    def __init__(self, parent=None, xlabel="", ylabel="", title="", scale="linear"):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
-        self.theplot = self.figure.add_subplot(111)
-        self.theplot.set_title(title)
-        self.theplot.set_xlabel(xlabel)
-        self.theplot.set_ylabel(ylabel)
+        self.ax = self.figure.add_subplot(111)
+        self.ax.set_title(title)
         self.figure.set_tight_layout(True)
-        self.theplot.set_yscale("log")
+        self.ax.set_xlabel(xlabel)
+        self.ax.set_ylabel(ylabel)
+        super(PlotWidget, self).__init__(self.figure)
