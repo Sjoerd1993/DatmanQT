@@ -1,0 +1,54 @@
+app-id: org.SjoerdB93.DatMan
+runtime: org.kde.Platform
+runtime-version: '5.15-21.08'
+sdk: org.kde.Sdk
+base: com.riverbankcomputing.PyQt.BaseApp
+base-version: "5.15-21.08"
+command: runner.sh
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --share=network
+  - --filesystem=xdg-documents
+  - --device=dri
+  
+modules:  
+
+  - python3-requirements.json
+        
+  - name: DatMan
+    sources:
+      - type: file
+        path: org.SjoerdB93.DatMan.desktop
+      - type: file
+        path: org.SjoerdB93.DatMan.png
+      - type: file
+        path: main.py
+      - type: file
+        path: CallUI.py
+      - type: file
+        path: plotting_tools.py
+      - type: file
+        path: datman.py
+      - type: file
+        path: form.ui
+      - type: file
+        path: data.py
+      - type: file
+        path: graph.py
+      - type: file
+        path: runner.sh
+        
+    buildsystem: simple
+    build-commands:
+      - install -D org.SjoerdB93.DatMan.desktop /app/share/applications/org.SjoerdB93.DatMan.desktop
+      - install -D main.py /app/bin/main.py
+      - install -D data.py /app/bin/data.py
+      - install -D org.SjoerdB93.DatMan.png /app/share/icons/hicolor/128x128/apps/org.SjoerdB93.DatMan.png
+      - install -D datman.py /app/bin/datman.py
+      - install -D CallUI.py /app/bin/CallUI.py
+      - install -D graph.py /app/bin/graph.py      
+      - install -D plotting_tools.py /app/bin/plotting_tools.py      
+      - install form.ui /app/bin/form.ui
+      - install -D runner.sh /app/bin/runner.sh   
