@@ -14,7 +14,10 @@ def select_data_button(self):
         delete_selected(self)
         self.plot_figure()
     else:
-        define_highlight(self)
+        try:
+            define_highlight(self)
+        except TypeError:
+            pass
         self.startx = 0
         self.stopx = 0
 
