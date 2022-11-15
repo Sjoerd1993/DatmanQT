@@ -75,8 +75,8 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.clicked = False
         if self.selection_button.isChecked() and self.hover:
             self.select_data()
+            plotting_tools.insert_vline(self)
         self.hover = False
-        plotting_tools.insert_vline(self)
         self.figurecanvas[1].draw()
 
     def remove_sample(self):
