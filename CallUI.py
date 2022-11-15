@@ -20,6 +20,7 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.figurecanvas = None
         self.datadict = {}
         self.setupUi(self)
+        self.highlight = None
         self.clicked = False
         self.data = Data()
         self.graph = Graph()
@@ -57,10 +58,16 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.clicked = True
         self.hover = False
         self.startx = event.xdata
+        self.stopx = event.xdata
+        if self.clicked == True and self.selection_button.isChecked():
+            plotting_tools.insert_vline(self)
+
 
     def on_hover(self, event):
         self.hover = False
         if self.clicked == True and self.selection_button.isChecked():
+            plotting_tools.insert_vline(self)
+            self.figurecanvas[1].draw()
             self.stopx = event.xdata
             self.hover = True
 
@@ -69,6 +76,8 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         if self.selection_button.isChecked() and self.hover:
             self.select_data()
         self.hover = False
+        plotting_tools.insert_vline(self)
+        self.figurecanvas[1].draw()
 
     def remove_sample(self):
         datman.delete_selected(self)
@@ -136,6 +145,8 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.figurecanvas[1].canvas.mpl_connect('button_press_event', self.on_press)
         self.figurecanvas[1].canvas.mpl_connect('motion_notify_event', self.on_hover)
         self.figurecanvas[1].canvas.mpl_connect('button_release_event', self.on_release)
+        datman.remove_highlight(self)
+
 
     def select_data(self):
         datman.delete_selected(self)
@@ -144,13 +155,22 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         stopx = max(self.startx, self.stopx)
         if self.edit_all_button.isChecked():
             for key, item in self.datadict.items():
-                selected_data = self.pick_data_selection(item, startx, stopx)
-                selected_dict[f"{key}_selected"] = selected_data
+                if item is not None and len(item.xdata) > 0:
+                    if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
+                        selected_data = self.pick_data_selection(item, startx, stopx)
+                        selected_dict[f"{key}_selected"] = selected_data
         else:
             key = self.open_item_list.currentItem().text()
             item = self.datadict[key]
-            selected_data = self.pick_data_selection(item, startx, stopx)
-            selected_dict[f"{key}_selected"] = selected_data
+            if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
+                selected_data = self.pick_data_selection(item, startx, stopx)
+                selected_dict[f"{key}_selected"] = selected_data
+
+        if (startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata)):
+            datman.delete_selected(self)
+            self.clear_layout(self.graphlayout)
+            title = None
+            self.plot_figure(title=title)
 
         if len(selected_dict) > 0:
             self.datadict.update(selected_dict)

@@ -26,6 +26,14 @@ def load_files(self):
     files = get_path(self)
     open_selection(self, files)
 
+def remove_highlight(self):
+    try:
+        self.highlight.remove()
+    except (AttributeError, ValueError) as error:
+        print(error)
+        print("Cannot remove highlighted area, it probably does not exist (yet)")
+
+
 
 def normalize_data(self):
     delete_selected(self)
@@ -73,7 +81,11 @@ def normalize(ydata):
 
 
 def translate_y(self):
-    translate_value = float(self.translate_y_entry.text())
+    try:
+        translate_value = float(self.translate_y_entry.text())
+    except ValueError:
+        print("Please enter a valid number")
+        translate_value = 0
     if self.edit_all_button.isChecked():
         for key, item in self.datadict.items():
             item.ydata = [value + translate_value for value in item.ydata]
@@ -82,10 +94,29 @@ def translate_y(self):
         self.datadict[key].ydata =  [value + translate_value for value in self.datadict[key].ydata]
     self.plot_figure()
 
+def find_xlimits(self):
+    first_loop = True
+    for key, item in self.datadict.items():
+        xdata = item.xdata
+        if first_loop == True:
+            xmin = min(xdata)
+            xmax = max(xdata)
+        first_loop = False
+        if min(xdata) < xmin:
+            xmin = min(xdata)
+        if max(xdata) > xmax:
+            xmax = max(xdata)
+    return xmin, xmax
+
+
 
 
 def translate_x(self):
-    translate_value = float(self.translate_x_entry.text())
+    try:
+        translate_value = float(self.translate_x_entry.text())
+    except ValueError:
+        print("Please enter a valid number")
+        translate_value = 0
     if self.edit_all_button.isChecked():
         for key, item in self.datadict.items():
             item.xdata = [value + translate_value for value in item.xdata]
@@ -95,7 +126,11 @@ def translate_x(self):
     self.plot_figure()
 
 def multiply_y(self):
-    multiply_value = float(self.multiply_y_entry.text())
+    try:
+        multiply_value = float(self.multiply_y_entry.text())
+    except ValueError:
+        print("Please enter a valid number")
+        multiply_value = 1
     if self.edit_all_button.isChecked():
         for key, item in self.datadict.items():
             item.ydata = [value * multiply_value for value in item.ydata]
@@ -106,7 +141,11 @@ def multiply_y(self):
 
 
 def multiply_x(self):
-    multiply_value = float(self.multiply_x_entry.text())
+    try:
+        multiply_value = float(self.multiply_x_entry.text())
+    except ValueError:
+        print("Please enter a valid number")
+        multiply_value = 1
     if self.edit_all_button.isChecked():
         for key, item in self.datadict.items():
             item.xdata = [value * multiply_value for value in item.xdata]
@@ -153,12 +192,16 @@ def smooth(y, box_points):
 
 def cut_data(self):
     for key, item in self.datadict.items():
+        if item is None:
+            continue
         xdata = item.xdata
         ydata = item.ydata
         new_x = []
         new_y = []
         if f"{key}_selected" in self.datadict:
             selected_item = self.datadict[f"{key}_selected"]
+            if selected_item == None:
+                continue
             for index, (valuex, valuey) in enumerate(zip(xdata, ydata)):
                 if valuex < min(selected_item.xdata) or valuex > max(selected_item.xdata):
                     new_x.append(valuex)
@@ -167,7 +210,6 @@ def cut_data(self):
             item.ydata = new_y
     delete_selected(self)
     self.plot_figure()
-
 
 def open_selection(self, files):
     for file in files:
@@ -227,7 +269,7 @@ def create_layout(self, canvas, layout):
     layout.addWidget(toolbar)
 
 
-def get_path(self, documenttype="Text file (*.txt);;All Files (*)"):
+def get_path(self, documenttype="Text file (*.txt *.xy *.dat);;All Files (*)"):
     dialog = QFileDialog
     options = dialog.Options()
     options |= QFileDialog.DontUseNativeDialog
