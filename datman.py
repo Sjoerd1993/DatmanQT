@@ -46,6 +46,8 @@ def define_highlight(self, span=None):
 def load_files(self):
     files = get_path(self)
     open_selection(self, files)
+    self.open_item_list.setCurrentRow(0)
+    self.select_measurement()
     define_highlight(self)
 
 

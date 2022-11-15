@@ -28,7 +28,7 @@ def plotGraphOnCanvas(self, layout, title = "", scale="log", marker = None, reve
 def plotgGraphFigure(self, X, Y, canvas, filename="", xlim=None, title="", scale="log",marker=None, linestyle="solid",
                      revert = False):
     fig = canvas.ax
-    if self.selected_measurement == filename:
+    if self.selected_measurement == filename and self.open_item_list.count() > 1:
         linewidth = 3
     else:
         linewidth = 1.5
