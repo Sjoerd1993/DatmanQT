@@ -59,13 +59,14 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.plot_figure()
 
     def select_measurement(self):
-        self.selected_measurement = self.open_item_list.currentItem().text()
-        self.plot_figure()
-        if self.selection_button.isChecked() and self.stopx != self.startx:
-            span = (self.startx, self.stopx)
-            datman.define_highlight(self, span = span)
-            self.span.set_visible(True)
-            self.span.set_active(True)
+        if self.open_item_list.count() > 1:
+            self.selected_measurement = self.open_item_list.currentItem().text()
+            self.plot_figure()
+            if self.selection_button.isChecked() and self.stopx != self.startx:
+                span = (self.startx, self.stopx)
+                datman.define_highlight(self, span = span)
+                self.span.set_visible(True)
+                self.span.set_active(True)
 
     def onselect(self, xmin, xmax):
         if self.span is not None:
@@ -93,6 +94,7 @@ class CallUI(QtBaseClass, Ui_MainWindow):
             del (self.datadict[key_to_remove])
             self.open_item_list.takeItem(self.open_item_list.currentRow())
             self.plot_figure()
+            self.select_measurement()
 
     def sort_data(self, x, y):
         bar_list = {"x": x, "y": y}
