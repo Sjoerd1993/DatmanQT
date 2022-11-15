@@ -8,10 +8,15 @@ from data import Data
 import re
 from matplotlib.widgets import SpanSelector
 
+
 def select_data_button(self):
     if not self.selection_button.isChecked():
         delete_selected(self)
         self.plot_figure()
+    else:
+        define_highlight(self)
+        self.startx = 0
+        self.stopx = 0
 
 
 def delete_selected(self):
@@ -22,22 +27,29 @@ def delete_selected(self):
     for key in key_list:
         del (self.datadict[key])
 
-def define_highlight(self):
+
+def define_highlight(self, span=None):
     self.span = SpanSelector(
         self.figurecanvas[0].axes[0],
         self.onselect,
         "horizontal",
         useblit=True,
-        props=dict(alpha=0.5, facecolor="tab:red"),
+        props=dict(alpha=0.3, facecolor="tab:red"),
         interactive=True,
         drag_from_anywhere=True)
+    if span is not None:
+        self.span.extents = span
     self.span.set_visible(False)
     self.span.set_active(False)
+
 
 def load_files(self):
     files = get_path(self)
     open_selection(self, files)
+    self.open_item_list.setCurrentRow(0)
+    self.select_measurement()
     define_highlight(self)
+
 
 def normalize_data(self):
     delete_selected(self)
@@ -45,6 +57,8 @@ def normalize_data(self):
         for key, item in self.datadict.items():
             item.ydata = normalize(item.ydata)
     else:
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].ydata = normalize(self.datadict[key].ydata)
     self.plot_figure()
@@ -66,9 +80,12 @@ def center_data(self):
         for key, item in self.datadict.items():
             item.xdata = center_data_calculation(item.xdata, item.ydata)
     else:
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].xdata = center_data_calculation(self.datadict[key].xdata, self.datadict[key].ydata)
     self.plot_figure()
+
 
 def center_data_calculation(xdata, ydata):
     max_value = max(ydata)
@@ -94,9 +111,19 @@ def translate_y(self):
         for key, item in self.datadict.items():
             item.ydata = [value + translate_value for value in item.ydata]
     else:
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
-        self.datadict[key].ydata =  [value + translate_value for value in self.datadict[key].ydata]
+        self.datadict[key].ydata = [value + translate_value for value in self.datadict[key].ydata]
     self.plot_figure()
+
+
+def skip_single_operation(self):
+    if self.open_item_list.currentItem() is None or self.selected_measurement == "":
+        return True
+    else:
+        return False
+
 
 def find_xlimits(self):
     first_loop = True
@@ -113,8 +140,6 @@ def find_xlimits(self):
     return xmin, xmax
 
 
-
-
 def translate_x(self):
     try:
         translate_value = float(self.translate_x_entry.text())
@@ -125,9 +150,12 @@ def translate_x(self):
         for key, item in self.datadict.items():
             item.xdata = [value + translate_value for value in item.xdata]
     else:
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].xdata = [value + translate_value for value in self.datadict[key].xdata]
     self.plot_figure()
+
 
 def multiply_y(self):
     try:
@@ -139,6 +167,8 @@ def multiply_y(self):
         for key, item in self.datadict.items():
             item.ydata = [value * multiply_value for value in item.ydata]
     else:
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].ydata = [value * multiply_value for value in self.datadict[key].ydata]
     self.plot_figure()
@@ -154,9 +184,12 @@ def multiply_x(self):
         for key, item in self.datadict.items():
             item.xdata = [value * multiply_value for value in item.xdata]
     else:
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].xdata = [value * multiply_value for value in self.datadict[key].xdata]
     self.plot_figure()
+
 
 def smoothen_data(self):
     if self.edit_all_button.isChecked():
@@ -165,10 +198,15 @@ def smoothen_data(self):
             item.ydata = smooth(ydata, 3)
     else:
         print("Button is not checked!")
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
         ydata = self.datadict[key].ydata
         self.datadict[key].ydata = smooth(ydata, 5)
     self.plot_figure()
+    self.startx = 0
+    self.stopx = 0
+
 
 def smoothen_data_logscale(self):
     if self.edit_all_button.isChecked():
@@ -179,42 +217,51 @@ def smoothen_data_logscale(self):
             item.ydata = np.exp(item.ydata)
     else:
         print("Button is not checked!")
+        if skip_single_operation(self):
+            return None
         key = self.open_item_list.currentItem().text()
+        print(key)
         ydata = self.datadict[key].ydata
         ydata = [np.log(value) for value in ydata]
         ydata = smooth(ydata, 5)
         ydata = np.exp(ydata)
-        self.datadict[key].y = ydata
+        self.datadict[key].ydata = ydata
     self.plot_figure()
+    self.startx = 0
+    self.stopx = 0
+
 
 def smooth(y, box_points):
-    box = np.ones(box_points)/box_points
-    y_smooth = np.convolve(y, box, mode = "same")
+    box = np.ones(box_points) / box_points
+    y_smooth = np.convolve(y, box, mode="same")
     return y_smooth
 
 
 def cut_data(self):
-    for key, item in self.datadict.items():
-        if item is None:
-            continue
-        xdata = item.xdata
-        ydata = item.ydata
-        new_x = []
-        new_y = []
-        if f"{key}_selected" in self.datadict:
-            selected_item = self.datadict[f"{key}_selected"]
-            if selected_item == None:
+    select_data = self.select_data()
+    if select_data:
+        for key, item in self.datadict.items():
+            if item is None:
                 continue
-            for index, (valuex, valuey) in enumerate(zip(xdata, ydata)):
-                if valuex < min(selected_item.xdata) or valuex > max(selected_item.xdata):
-                    new_x.append(valuex)
-                    new_y.append(valuey)
-            item.xdata = new_x
-            item.ydata = new_y
-    delete_selected(self)
-    self.plot_figure()
-    define_highlight(self)
-
+            xdata = item.xdata
+            ydata = item.ydata
+            new_x = []
+            new_y = []
+            if f"{key}_selected" in self.datadict:
+                selected_item = self.datadict[f"{key}_selected"]
+                if selected_item == None:
+                    continue
+                for index, (valuex, valuey) in enumerate(zip(xdata, ydata)):
+                    if valuex < min(selected_item.xdata) or valuex > max(selected_item.xdata):
+                        new_x.append(valuex)
+                        new_y.append(valuey)
+                item.xdata = new_x
+                item.ydata = new_y
+        delete_selected(self)
+        self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
+        define_highlight(self)
 
 
 def open_selection(self, files):
@@ -265,8 +312,9 @@ def get_data(path):
 
 def load_empty(self):
     canvas = plotting_tools.PlotWidget(xlabel="X value", ylabel="Y Value",
-                                                    title="Plot")
+                                       title="Plot")
     create_layout(self, canvas, self.graphlayout)
+
 
 def create_layout(self, canvas, layout):
     toolbar = NavigationToolbar(canvas, self)
@@ -277,7 +325,6 @@ def create_layout(self, canvas, layout):
 def get_path(self, documenttype="Text file (*.txt *.xy *.dat);;All Files (*)"):
     dialog = QFileDialog
     options = dialog.Options()
-    options |= QFileDialog.DontUseNativeDialog
     path = QFileDialog.getOpenFileNames(self, "Open files", "",
                                         documenttype, options=options)[0]
     return path
