@@ -12,6 +12,10 @@ def select_data_button(self):
     if not self.selection_button.isChecked():
         delete_selected(self)
         self.plot_figure()
+    else:
+        define_highlight(self)
+        self.startx = 0
+        self.stopx = 0
 
 
 def delete_selected(self):
@@ -215,6 +219,8 @@ def cut_data(self):
                 item.ydata = new_y
         delete_selected(self)
         self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
         define_highlight(self)
 
 

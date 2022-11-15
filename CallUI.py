@@ -150,7 +150,6 @@ class CallUI(QtBaseClass, Ui_MainWindow):
             except AttributeError:
                 print("Can't find any selection, make sure to highlight a graph!")
                 return False
-            print("Should only do a single one")
             item = self.datadict[key]
             if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
                 selected_data = self.pick_data_selection(item, startx, stopx)
@@ -171,7 +170,6 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         stop_index = len(xdata)
         found_start = False
         found_stop = False
-
         for index, value in enumerate(xdata):
             if value > startx and not found_start:
                 start_index = index
