@@ -34,18 +34,25 @@
           <item>
            <widget class="QPushButton" name="load_button">
             <property name="text">
-             <string>Load data</string>
+             <string>Add data</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="remove_button">
             <property name="text">
-             <string>Remove</string>
+             <string>Remove data</string>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="deselect_button">
+          <property name="text">
+           <string>Clear selection</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -80,7 +87,7 @@
            <bool>true</bool>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>

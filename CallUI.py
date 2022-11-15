@@ -15,6 +15,7 @@ class CallUI(QtBaseClass, Ui_MainWindow):
     def __init__(self):
         QtBaseClass.__init__(self)
         Ui_MainWindow.__init__(self)
+        self.selected_measurement = ""
         self.span = None
         self.stopx = None
         self.hover = False
@@ -33,8 +34,10 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         # Connect File actions
         self.load_button.clicked.connect(lambda: datman.load_files(self))
         self.cut_data_button.clicked.connect(lambda: datman.cut_data(self))
+        self.deselect_button.clicked.connect(lambda: self.deselect_data())
         self.remove_button.clicked.connect(self.remove_sample)
         self.save_button.clicked.connect(self.save_data)
+        self.open_item_list.clicked.connect(lambda: self.select_measurement())
         self.normalize_button.clicked.connect(lambda: datman.normalize_data(self))
         self.shift_vertically_button.clicked.connect(lambda: datman.shift_vertically(self))
         self.center_button.clicked.connect(lambda: datman.center_data(self))
@@ -48,6 +51,21 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.translate_x_button.clicked.connect(lambda: datman.translate_x(self))
         self.yscale_button.clicked.connect(lambda: plotting_tools.change_scale(self))
         self.xscale_button.clicked.connect(lambda: plotting_tools.change_scale(self, scale="xscale"))
+
+    def deselect_data(self):
+        self.open_item_list.clearSelection()
+        self.selected_measurement = ""
+        self.open_item_list.repaint()
+        self.plot_figure()
+
+    def select_measurement(self):
+        self.selected_measurement = self.open_item_list.currentItem().text()
+        self.plot_figure()
+        if self.selection_button.isChecked() and self.stopx != self.startx:
+            span = (self.startx, self.stopx)
+            datman.define_highlight(self, span = span)
+            self.span.set_visible(True)
+            self.span.set_active(True)
 
     def onselect(self, xmin, xmax):
         if self.span is not None:
@@ -124,14 +142,15 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         return fileName
 
     def plot_figure(self, layout=None, title=None):
-        if title == None:
+        if title is None:
             title = self.get_title()
-        if layout == None:
+        if layout is None:
             layout = self.graphlayout
         self.clear_layout(layout)
         self.figurecanvas = plotting_tools.plotGraphOnCanvas(self, layout,
                                                              title=title, scale="log", marker=None)
         self.figurecanvas[1].canvas.mpl_connect('button_press_event', self.on_press)
+        datman.define_highlight(self)
 
     def select_data(self):
         datman.delete_selected(self)
@@ -149,6 +168,8 @@ class CallUI(QtBaseClass, Ui_MainWindow):
                 key = self.open_item_list.currentItem().text()
             except AttributeError:
                 print("Can't find any selection, make sure to highlight a graph!")
+                return False
+            if datman.skip_single_operation(self):
                 return False
             item = self.datadict[key]
             if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
