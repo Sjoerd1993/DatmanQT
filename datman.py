@@ -61,6 +61,8 @@ def normalize_data(self):
             return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].ydata = normalize(self.datadict[key].ydata)
+    self.startx = 0
+    self.stopx = 0
     self.plot_figure()
 
 
@@ -71,6 +73,8 @@ def shift_vertically(self):
     for key, item in self.datadict.items():
         item.ydata = [value * shifter for value in item.ydata]
         shifter *= shift_value
+    self.startx = 0
+    self.stopx = 0
     self.plot_figure()
 
 
@@ -84,6 +88,8 @@ def center_data(self):
             return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].xdata = center_data_calculation(self.datadict[key].xdata, self.datadict[key].ydata)
+    self.startx = 0
+    self.stopx = 0
     self.plot_figure()
 
 
@@ -154,6 +160,9 @@ def translate_x(self):
             return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].xdata = [value + translate_value for value in self.datadict[key].xdata]
+
+    self.startx = 0
+    self.stopx = 0
     self.plot_figure()
 
 
@@ -171,6 +180,8 @@ def multiply_y(self):
             return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].ydata = [value * multiply_value for value in self.datadict[key].ydata]
+    self.startx = 0
+    self.stopx = 0
     self.plot_figure()
 
 
@@ -188,6 +199,8 @@ def multiply_x(self):
             return None
         key = self.open_item_list.currentItem().text()
         self.datadict[key].xdata = [value * multiply_value for value in self.datadict[key].xdata]
+    self.startx = 0
+    self.stopx = 0
     self.plot_figure()
 
 
