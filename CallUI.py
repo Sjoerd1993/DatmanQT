@@ -145,7 +145,12 @@ class CallUI(QtBaseClass, Ui_MainWindow):
                         selected_data = self.pick_data_selection(item, startx, stopx)
                         selected_dict[f"{key}_selected"] = selected_data
         else:
-            key = self.open_item_list.currentItem().text()
+            try:
+                key = self.open_item_list.currentItem().text()
+            except AttributeError:
+                print("Can't find any selection, make sure to highlight a graph!")
+                return False
+            print("Should only do a single one")
             item = self.datadict[key]
             if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
                 selected_data = self.pick_data_selection(item, startx, stopx)
@@ -156,6 +161,7 @@ class CallUI(QtBaseClass, Ui_MainWindow):
 
         if len(selected_dict) > 0:
             self.datadict.update(selected_dict)
+        return True
 
     def pick_data_selection(self, item, startx, stopx):
         xdata = item.xdata

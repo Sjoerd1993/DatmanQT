@@ -28,7 +28,7 @@ def define_highlight(self):
         self.onselect,
         "horizontal",
         useblit=True,
-        props=dict(alpha=0.5, facecolor="tab:red"),
+        props=dict(alpha=0.3, facecolor="tab:red"),
         interactive=True,
         drag_from_anywhere=True)
     self.span.set_visible(False)
@@ -194,26 +194,28 @@ def smooth(y, box_points):
 
 
 def cut_data(self):
-    for key, item in self.datadict.items():
-        if item is None:
-            continue
-        xdata = item.xdata
-        ydata = item.ydata
-        new_x = []
-        new_y = []
-        if f"{key}_selected" in self.datadict:
-            selected_item = self.datadict[f"{key}_selected"]
-            if selected_item == None:
+    select_data = self.select_data()
+    if select_data:
+        for key, item in self.datadict.items():
+            if item is None:
                 continue
-            for index, (valuex, valuey) in enumerate(zip(xdata, ydata)):
-                if valuex < min(selected_item.xdata) or valuex > max(selected_item.xdata):
-                    new_x.append(valuex)
-                    new_y.append(valuey)
-            item.xdata = new_x
-            item.ydata = new_y
-    delete_selected(self)
-    self.plot_figure()
-    define_highlight(self)
+            xdata = item.xdata
+            ydata = item.ydata
+            new_x = []
+            new_y = []
+            if f"{key}_selected" in self.datadict:
+                selected_item = self.datadict[f"{key}_selected"]
+                if selected_item == None:
+                    continue
+                for index, (valuex, valuey) in enumerate(zip(xdata, ydata)):
+                    if valuex < min(selected_item.xdata) or valuex > max(selected_item.xdata):
+                        new_x.append(valuex)
+                        new_y.append(valuey)
+                item.xdata = new_x
+                item.ydata = new_y
+        delete_selected(self)
+        self.plot_figure()
+        define_highlight(self)
 
 
 
