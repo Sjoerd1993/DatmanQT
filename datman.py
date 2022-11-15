@@ -17,7 +17,7 @@ def select_data_button(self):
         try:
             define_highlight(self)
         except TypeError:
-            pass
+            print("Could not define a ROI, perhaps no files are loaded yet")
         self.startx = 0
         self.stopx = 0
 
