@@ -15,12 +15,14 @@ class CallUI(QtBaseClass, Ui_MainWindow):
     def __init__(self):
         QtBaseClass.__init__(self)
         Ui_MainWindow.__init__(self)
+        self.span = None
         self.stopx = None
         self.hover = False
         self.figurecanvas = None
         self.datadict = {}
         self.setupUi(self)
-        self.highlight = None
+        self.startx = 0
+        self.stopx = 0
         self.clicked = False
         self.data = Data()
         self.graph = Graph()
@@ -47,6 +49,13 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.yscale_button.clicked.connect(lambda: plotting_tools.change_scale(self))
         self.xscale_button.clicked.connect(lambda: plotting_tools.change_scale(self, scale="xscale"))
 
+    def onselect(self, xmin, xmax):
+        if self.span is not None:
+            self.span.set_visible(True)
+            self.span.set_active(True)
+        self.startx = xmin
+        self.stopx = xmax
+        self.select_data()
 
     def clear_layout(self, layout):
         while layout.count():
@@ -55,29 +64,9 @@ class CallUI(QtBaseClass, Ui_MainWindow):
                 child.widget().deleteLater()
 
     def on_press(self, event):
-        self.clicked = True
-        self.hover = False
-        self.startx = event.xdata
-        self.stopx = event.xdata
-        if self.clicked == True and self.selection_button.isChecked():
-            plotting_tools.insert_vline(self)
-
-
-    def on_hover(self, event):
-        self.hover = False
-        if self.clicked == True and self.selection_button.isChecked():
-            plotting_tools.insert_vline(self)
-            self.figurecanvas[1].draw()
-            self.stopx = event.xdata
-            self.hover = True
-
-    def on_release(self, event):
-        self.clicked = False
-        if self.selection_button.isChecked() and self.hover:
-            self.select_data()
-            plotting_tools.insert_vline(self)
-        self.hover = False
-        self.figurecanvas[1].draw()
+        if self.selection_button.isChecked():
+            self.span.set_visible(True)
+            self.span.set_active(True)
 
     def remove_sample(self):
         datman.delete_selected(self)
@@ -143,10 +132,6 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.figurecanvas = plotting_tools.plotGraphOnCanvas(self, layout,
                                                              title=title, scale="log", marker=None)
         self.figurecanvas[1].canvas.mpl_connect('button_press_event', self.on_press)
-        self.figurecanvas[1].canvas.mpl_connect('motion_notify_event', self.on_hover)
-        self.figurecanvas[1].canvas.mpl_connect('button_release_event', self.on_release)
-        datman.remove_highlight(self)
-
 
     def select_data(self):
         datman.delete_selected(self)
@@ -168,19 +153,9 @@ class CallUI(QtBaseClass, Ui_MainWindow):
 
         if (startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata)):
             datman.delete_selected(self)
-            self.clear_layout(self.graphlayout)
-            title = None
-            self.plot_figure(title=title)
 
         if len(selected_dict) > 0:
             self.datadict.update(selected_dict)
-            self.clear_layout(self.graphlayout)
-            title = None
-            if len(selected_dict) == 1:
-                for key in self.datadict.keys():
-                    title = self.datadict[key].filename
-                    break
-            self.plot_figure(title=title)
 
     def pick_data_selection(self, item, startx, stopx):
         xdata = item.xdata

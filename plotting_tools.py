@@ -22,18 +22,13 @@ def plotGraphOnCanvas(self, layout, title = "", scale="log", marker = None, reve
     layout.addWidget(self.toolbar)
     return figurecanvas
 
-def insert_vline(self):
-    axes = self.figurecanvas[1].ax
-    datman.remove_highlight(self)
-    self.highlight = axes.axvspan(self.startx, self.stopx, color='red', alpha=0.3)
+
+
 
 def plotgGraphFigure(self, X, Y, canvas, filename="", xlim=None, title="", scale="log",marker=None, linestyle="solid",
                      revert = False):
     fig = canvas.ax
     fig.plot(X, Y, label=filename, linestyle=linestyle, marker=marker)
-    if self.selection_button.isChecked():
-        datman.remove_highlight(self)
-        self.highlight = canvas.ax.axvspan(self.startx, self.stopx, color='red', alpha=0.3)
     canvas.ax.set_title(title)
     set_canvas_limits(self, canvas)
     canvas.ax.set_yscale(scale)
@@ -109,3 +104,4 @@ class PlotWidget(FigureCanvas):
         self.ax.set_xlabel(xlabel)
         self.ax.set_ylabel(ylabel)
         super(PlotWidget, self).__init__(self.figure)
+

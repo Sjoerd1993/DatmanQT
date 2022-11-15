@@ -6,6 +6,7 @@ import os
 import numpy as np
 from data import Data
 import re
+from matplotlib.widgets import SpanSelector
 
 def select_data_button(self):
     if not self.selection_button.isChecked():
@@ -21,19 +22,22 @@ def delete_selected(self):
     for key in key_list:
         del (self.datadict[key])
 
+def define_highlight(self):
+    self.span = SpanSelector(
+        self.figurecanvas[0].axes[0],
+        self.onselect,
+        "horizontal",
+        useblit=True,
+        props=dict(alpha=0.5, facecolor="tab:red"),
+        interactive=True,
+        drag_from_anywhere=True)
+    self.span.set_visible(False)
+    self.span.set_active(False)
 
 def load_files(self):
     files = get_path(self)
     open_selection(self, files)
-
-def remove_highlight(self):
-    try:
-        self.highlight.remove()
-    except (AttributeError, ValueError) as error:
-        print(error)
-        print("Cannot remove highlighted area, it probably does not exist (yet)")
-
-
+    define_highlight(self)
 
 def normalize_data(self):
     delete_selected(self)
@@ -169,7 +173,6 @@ def smoothen_data(self):
 def smoothen_data_logscale(self):
     if self.edit_all_button.isChecked():
         for key, item in self.datadict.items():
-            ydata = item.ydata
             print(f"Creating log scale, max value first is {max(item.ydata)}")
             item.ydata = [np.log(value) for value in item.ydata]
             item.ydata = smooth(item.ydata, 5)
@@ -210,6 +213,9 @@ def cut_data(self):
             item.ydata = new_y
     delete_selected(self)
     self.plot_figure()
+    define_highlight(self)
+
+
 
 def open_selection(self, files):
     for file in files:
@@ -261,7 +267,6 @@ def load_empty(self):
     canvas = plotting_tools.PlotWidget(xlabel="X value", ylabel="Y Value",
                                                     title="Plot")
     create_layout(self, canvas, self.graphlayout)
-
 
 def create_layout(self, canvas, layout):
     toolbar = NavigationToolbar(canvas, self)
