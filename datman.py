@@ -50,7 +50,6 @@ def define_highlight(self, span=None):
 def load_files(self):
     files = get_path(self)
     if files != []:
-        print(files)
         open_selection(self, files)
         self.open_item_list.setCurrentRow(0)
         self.selected_measurement = self.open_item_list.currentItem().text()
