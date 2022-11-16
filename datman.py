@@ -1,3 +1,4 @@
+import datman
 import plotting_tools
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from PyQt5.QtWidgets import QFileDialog
@@ -48,26 +49,25 @@ def define_highlight(self, span=None):
 
 def load_files(self):
     files = get_path(self)
-    open_selection(self, files)
-    self.open_item_list.setCurrentRow(0)
-    self.selected_measurement = self.open_item_list.currentItem().text()
-    self.select_measurement()
-    define_highlight(self)
+    if files != []:
+        print(files)
+        open_selection(self, files)
+        self.open_item_list.setCurrentRow(0)
+        self.selected_measurement = self.open_item_list.currentItem().text()
+        self.select_measurement()
+        define_highlight(self)
 
 
 def normalize_data(self):
     delete_selected(self)
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            item.ydata = normalize(item.ydata)
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         self.datadict[key].ydata = normalize(self.datadict[key].ydata)
-    self.startx = 0
-    self.stopx = 0
-    self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
+        self.plot_figure()
 
 
 def shift_vertically(self):
@@ -84,17 +84,14 @@ def shift_vertically(self):
 
 def center_data(self):
     delete_selected(self)
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            item.xdata = center_data_calculation(item.xdata, item.ydata)
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         self.datadict[key].xdata = center_data_calculation(self.datadict[key].xdata, self.datadict[key].ydata)
-    self.startx = 0
-    self.stopx = 0
-    self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
+        self.plot_figure()
 
 
 def center_data_calculation(xdata, ydata):
@@ -117,15 +114,12 @@ def translate_y(self):
     except ValueError:
         print("Please enter a valid number")
         translate_value = 0
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            item.ydata = [value + translate_value for value in item.ydata]
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         self.datadict[key].ydata = [value + translate_value for value in self.datadict[key].ydata]
-    self.plot_figure()
+        self.plot_figure()
 
 
 def skip_single_operation(self):
@@ -151,23 +145,25 @@ def find_xlimits(self):
 
 
 def translate_x(self):
+    get_selected_keys(self)
     try:
         translate_value = float(self.translate_x_entry.text())
     except ValueError:
         print("Please enter a valid number")
         translate_value = 0
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            item.xdata = [value + translate_value for value in item.xdata]
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
+        print(key)
+        print(selected_keys)
         self.datadict[key].xdata = [value + translate_value for value in self.datadict[key].xdata]
 
-    self.startx = 0
-    self.stopx = 0
-    self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
+        self.plot_figure()
+    else:
+        print(f"{key} was not in selected keys")
 
 
 def multiply_y(self):
@@ -176,17 +172,14 @@ def multiply_y(self):
     except ValueError:
         print("Please enter a valid number")
         multiply_value = 1
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            item.ydata = [value * multiply_value for value in item.ydata]
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         self.datadict[key].ydata = [value * multiply_value for value in self.datadict[key].ydata]
-    self.startx = 0
-    self.stopx = 0
-    self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
+        self.plot_figure()
 
 
 def multiply_x(self):
@@ -195,54 +188,41 @@ def multiply_x(self):
     except ValueError:
         print("Please enter a valid number")
         multiply_value = 1
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            item.xdata = [value * multiply_value for value in item.xdata]
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         self.datadict[key].xdata = [value * multiply_value for value in self.datadict[key].xdata]
-    self.startx = 0
-    self.stopx = 0
-    self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
+        self.plot_figure()
 
 
 def smoothen_data(self):
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            ydata = item.ydata
-            item.ydata = smooth(ydata, 3)
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         ydata = self.datadict[key].ydata
         self.datadict[key].ydata = smooth(ydata, 5)
-    self.plot_figure()
-    self.startx = 0
-    self.stopx = 0
+        self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
 
 
 def smoothen_data_logscale(self):
-    if self.edit_all_button.isChecked():
-        for key, item in self.datadict.items():
-            print(f"Creating log scale, max value first is {max(item.ydata)}")
-            item.ydata = [np.log(value) for value in item.ydata]
-            item.ydata = smooth(item.ydata, 5)
-            item.ydata = np.exp(item.ydata)
-    else:
-        if skip_single_operation(self):
-            return None
-        key = self.open_item_list.currentItem().text()
+    if skip_single_operation(self):
+        return None
+    selected_keys = datman.get_selected_keys(self)
+    for key in selected_keys:
         ydata = self.datadict[key].ydata
         ydata = [np.log(value) for value in ydata]
         ydata = smooth(ydata, 5)
         ydata = np.exp(ydata)
         self.datadict[key].ydata = ydata
-    self.plot_figure()
-    self.startx = 0
-    self.stopx = 0
+        self.plot_figure()
+        self.startx = 0
+        self.stopx = 0
 
 
 def smooth(y, box_points):
@@ -277,6 +257,11 @@ def cut_data(self):
         self.stopx = 0
         define_highlight(self)
 
+def get_selected_keys(self):
+    selected_keys = []
+    for item in self.open_item_list.selectedItems():
+        selected_keys.append(item.text())
+    return selected_keys
 
 def open_selection(self, files):
     for file in files:

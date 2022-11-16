@@ -37,7 +37,7 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.deselect_button.clicked.connect(lambda: self.deselect_data())
         self.remove_button.clicked.connect(self.remove_sample)
         self.save_button.clicked.connect(self.save_data)
-        self.open_item_list.clicked.connect(lambda: self.select_measurement())
+        self.open_item_list.itemSelectionChanged.connect(lambda: self.select_measurement())
         self.normalize_button.clicked.connect(lambda: datman.normalize_data(self))
         self.shift_vertically_button.clicked.connect(lambda: datman.shift_vertically(self))
         self.center_button.clicked.connect(lambda: datman.center_data(self))
@@ -48,7 +48,6 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         self.translate_y_button.clicked.connect(lambda: datman.translate_y(self))
         self.smooth_button.clicked.connect(lambda: datman.smoothen_data(self))
         self.smooth_log_button.clicked.connect(lambda: datman.smoothen_data_logscale(self))
-        self.translate_x_button.clicked.connect(lambda: datman.translate_x(self))
         self.yscale_button.clicked.connect(lambda: plotting_tools.change_scale(self))
         self.xscale_button.clicked.connect(lambda: plotting_tools.change_scale(self, scale="xscale"))
 
@@ -159,30 +158,22 @@ class CallUI(QtBaseClass, Ui_MainWindow):
         selected_dict = {}
         startx = min(self.startx, self.stopx)
         stopx = max(self.startx, self.stopx)
-        if self.edit_all_button.isChecked():
-            for key, item in self.datadict.items():
-                if item is not None and len(item.xdata) > 0:
-                    if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
-                        selected_data = self.pick_data_selection(item, startx, stopx)
-                        selected_dict[f"{key}_selected"] = selected_data
+
+        if self.open_item_list.count() == 1:
+            selected_keys = [self.open_item_list.item(0).text()]
         else:
-            try:
-                key = self.open_item_list.currentItem().text()
-            except AttributeError:
-                print("Can't find any selection, make sure to highlight a graph!")
-                return False
-            if datman.skip_single_operation(self):
-                return False
+            selected_keys = datman.get_selected_keys(self)
+
+        for key in selected_keys:
             item = self.datadict[key]
             if not ((startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata))):
                 selected_data = self.pick_data_selection(item, startx, stopx)
                 selected_dict[f"{key}_selected"] = selected_data
+            if (startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata)):
+                datman.delete_selected(self)
 
-        if (startx < min(item.xdata) and stopx < min(item.xdata)) or (startx > max(item.xdata)):
-            datman.delete_selected(self)
-
-        if len(selected_dict) > 0:
-            self.datadict.update(selected_dict)
+            if len(selected_dict) > 0:
+                self.datadict.update(selected_dict)
         return True
 
     def pick_data_selection(self, item, startx, stopx):
