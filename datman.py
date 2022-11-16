@@ -50,6 +50,7 @@ def load_files(self):
     files = get_path(self)
     open_selection(self, files)
     self.open_item_list.setCurrentRow(0)
+    self.selected_measurement = self.open_item_list.currentItem().text()
     self.select_measurement()
     define_highlight(self)
 
@@ -213,7 +214,6 @@ def smoothen_data(self):
             ydata = item.ydata
             item.ydata = smooth(ydata, 3)
     else:
-        print("Button is not checked!")
         if skip_single_operation(self):
             return None
         key = self.open_item_list.currentItem().text()
@@ -232,11 +232,9 @@ def smoothen_data_logscale(self):
             item.ydata = smooth(item.ydata, 5)
             item.ydata = np.exp(item.ydata)
     else:
-        print("Button is not checked!")
         if skip_single_operation(self):
             return None
         key = self.open_item_list.currentItem().text()
-        print(key)
         ydata = self.datadict[key].ydata
         ydata = [np.log(value) for value in ydata]
         ydata = smooth(ydata, 5)
