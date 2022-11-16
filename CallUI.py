@@ -88,12 +88,20 @@ class CallUI(QtBaseClass, Ui_MainWindow):
 
     def remove_sample(self):
         datman.delete_selected(self)
-        if self.open_item_list.currentItem() is not None:
-            key_to_remove = self.open_item_list.currentItem().text()
-            del (self.datadict[key_to_remove])
-            self.open_item_list.takeItem(self.open_item_list.currentRow())
-            self.plot_figure()
-            self.select_measurement()
+        selected_keys = datman.get_selected_keys(self)
+
+        # Remove key from Listwidget
+        for i in range(self.open_item_list.count(), 0, -1):
+            key = self.open_item_list.item(i - 1).text()
+            if key in selected_keys:
+                self.open_item_list.takeItem(i - 1)
+
+        # Remove key from dictionary
+        for key in selected_keys:
+            del (self.datadict[key])
+
+        self.plot_figure()
+        self.select_measurement()
 
     def sort_data(self, x, y):
         bar_list = {"x": x, "y": y}

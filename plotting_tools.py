@@ -30,7 +30,7 @@ def plotgGraphFigure(self, X, Y, canvas, filename="", xlim=None, title="", scale
     fig = canvas.ax
     selected_keys = datman.get_selected_keys(self)
     if filename in selected_keys and self.open_item_list.count() > 1:
-        linewidth = 3
+        linewidth = 4
     else:
         linewidth = 1.5
     fig.plot(X, Y, linewidth = linewidth ,label=filename, linestyle=linestyle, marker=marker)
